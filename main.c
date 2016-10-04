@@ -23,9 +23,8 @@
 #define BALL_INITIAL_POSITION (vector2i){\
 	SCREEN_SIZE.x / 2,\
 	SCREEN_SIZE.y / 2}
-#define BALL_INITIAL_VELOCITY (vector2i){-5, 0}
+#define BALL_INITIAL_VELOCITY (vector2i){-8, 0}
 
-#define BALL_HORIZONTAL_SPEED_INCREASE 1
 #define BALL_VERTICAL_SPEED 5
 #define PADDLE_SPEED 3
 
@@ -222,7 +221,7 @@ int main(int argc, char** argv) {
 		if (inRect(ballPosition, spriteRect((vector2i){
 			PADDLE_PIXELS_FROM_BOUNDARY, 
 			leftPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x < 0) {
-			ballVelocity.x = -ballVelocity.x + BALL_HORIZONTAL_SPEED_INCREASE;
+			ballVelocity.x = -ballVelocity.x;
 			ballVelocity.y = 
 				(int) ((double) (ballPosition.y - leftPaddlePosition) / 
 				(PADDLE_SIZE.y / 2) *
@@ -232,7 +231,7 @@ int main(int argc, char** argv) {
 		if (inRect(ballPosition, spriteRect((vector2i){
 			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
 			rightPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x > 0) {
-			ballVelocity.x = -ballVelocity.x - BALL_HORIZONTAL_SPEED_INCREASE;
+			ballVelocity.x = -ballVelocity.x;
 			ballVelocity.y = 
 				(int) ((double) (ballPosition.y - rightPaddlePosition) / 
 				(PADDLE_SIZE.y / 2) *
