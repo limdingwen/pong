@@ -60,10 +60,10 @@ int main(int argc, char** argv) {
 	const vector2i BALL_INITIAL_POSITION = (vector2i){
 		SCREEN_SIZE.x / 2,
 		SCREEN_SIZE.y / 2};
-	const vector2i BALL_INITIAL_VELOCITY = (vector2i){-10, 0}; // Pixels per frame
+	const vector2i BALL_INITIAL_VELOCITY = (vector2i){-5, 0}; // Pixels per frame
 	
-	const int BALL_VERTICAL_SPEED = 10;
-	const int PADDLE_SPEED = 5;
+	const int BALL_VERTICAL_SPEED = 5;
+	const int PADDLE_SPEED = 3;
 
 	// ----------
 	// INITIALIZATION
@@ -183,6 +183,14 @@ int main(int argc, char** argv) {
 		
 		if (leftPaddlePosition < 0) leftPaddlePosition = 0;
 		else if (leftPaddlePosition > SCREEN_SIZE.y) leftPaddlePosition = SCREEN_SIZE.y;
+		
+		// Update right paddle position
+		
+		if (ballPosition.y > rightPaddlePosition) rightPaddlePosition += PADDLE_SPEED;
+		else if (ballPosition.y < rightPaddlePosition) rightPaddlePosition -= PADDLE_SPEED;
+		
+		if (rightPaddlePosition < 0) rightPaddlePosition = 0;
+		else if (rightPaddlePosition > SCREEN_SIZE.y) rightPaddlePosition = SCREEN_SIZE.y;
 		
 		// Update ball position
 		
