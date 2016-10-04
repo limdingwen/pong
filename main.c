@@ -60,7 +60,9 @@ int main(int argc, char** argv) {
 	const vector2i BALL_INITIAL_POSITION = (vector2i){
 		SCREEN_SIZE.x / 2,
 		SCREEN_SIZE.y / 2};
-	const vector2i BALL_INITIAL_SPEED = (vector2i){-1, 0}; // Pixels per frame
+	const vector2i BALL_INITIAL_SPEED = (vector2i){-10, 0}; // Pixels per frame
+	
+	const int PADDLE_SPEED = 5;
 
 	// ----------
 	// INITIALIZATION
@@ -124,11 +126,11 @@ int main(int argc, char** argv) {
 	vector2i ballPosition = BALL_INITIAL_POSITION;
 	vector2i ballSpeed = BALL_INITIAL_SPEED;
 	
-	/*int keyDownPressed = 0;
+	int keyDownPressed = 0;
 	int keyUpPressed = 0;
 	
 	int leftPaddlePosition = SCREEN_SIZE.y / 2;
-	int rightPaddlePosition = SCREEN_SIZE.y / 2;*/
+	int rightPaddlePosition = SCREEN_SIZE.y / 2;
 	
 	// Initialize font
 	
@@ -159,14 +161,14 @@ int main(int argc, char** argv) {
 			if (e.type == SDL_QUIT) {
 				running = 0;
 			}
-			/*else if (e.type == SDL_KEYDOWN) {
-				if (e.keysym.sym == SDLK_DOWN) keyDownPressed = 1;
-				else if (e.keysym.sym == SDLK_UP) keyUpPressed = 1;
+			else if (e.type == SDL_KEYDOWN) {
+				if (e.key.keysym.sym == SDLK_DOWN) keyDownPressed = 1;
+				else if (e.key.keysym.sym == SDLK_UP) keyUpPressed = 1;
 			}
 			else if (e.type == SDL_KEYUP) {
-				if (e.keysym.sym == SDLK_DOWN) keyDownPressed = 0;
-				else if (e.keysym.sym == SDLK_UP) keyUpPressed = 0;
-			}*/
+				if (e.key.keysym.sym == SDLK_DOWN) keyDownPressed = 0;
+				else if (e.key.keysym.sym == SDLK_UP) keyUpPressed = 0;
+			}
 		}
 		
 		// ----------
@@ -175,7 +177,11 @@ int main(int argc, char** argv) {
 		
 		// Update left paddle position
 		
+		if (keyDownPressed) leftPaddlePosition += PADDLE_SPEED;
+		if (keyUpPressed) leftPaddlePosition -= PADDLE_SPEED;
 		
+		if (leftPaddlePosition < 0) leftPaddlePosition = 0;
+		else if (leftPaddlePosition > SCREEN_SIZE.y) leftPaddlePosition = SCREEN_SIZE.y;
 		
 		// Update ball position
 		
@@ -201,13 +207,13 @@ int main(int argc, char** argv) {
 		
 		if (inRect(ballPosition, spriteRect((vector2i){
 			PADDLE_PIXELS_FROM_BOUNDARY, 
-			SCREEN_SIZE.y / 2}, PADDLE_SIZE)) && ballSpeed.x < 0) {
+			leftPaddlePosition}, PADDLE_SIZE)) && ballSpeed.x < 0) {
 			ballSpeed.x = -ballSpeed.x;
 		}
 		
 		if (inRect(ballPosition, spriteRect((vector2i){
 			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
-			SCREEN_SIZE.y / 2}, PADDLE_SIZE)) && ballSpeed.x > 0) {
+			rightPaddlePosition}, PADDLE_SIZE)) && ballSpeed.x > 0) {
 			ballSpeed.x = -ballSpeed.x;
 		}
 
@@ -230,12 +236,12 @@ int main(int argc, char** argv) {
 		
 		dstRect = sdlRect(spriteRect((vector2i){
 			PADDLE_PIXELS_FROM_BOUNDARY, 
-			SCREEN_SIZE.y / 2}, PADDLE_SIZE));
+			leftPaddlePosition}, PADDLE_SIZE));
 		SDL_BlitSurface(leftPaddleSurface, NULL, screenSurface, &dstRect);
 		
 		dstRect = sdlRect(spriteRect((vector2i){
 			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
-			SCREEN_SIZE.y / 2}, PADDLE_SIZE));
+			rightPaddlePosition}, PADDLE_SIZE));
 		SDL_BlitSurface(rightPaddleSurface, NULL, screenSurface, &dstRect);
 		
 		dstRect = sdlRect(spriteRect(ballPosition, BALL_SIZE));
