@@ -1,6 +1,6 @@
 CC = gcc
 CCFLAGS = -g -Wall
-LDFLAGS = -lSDL2 -lSDL2_image
+LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
 BIN = pong
 SRC = main.c

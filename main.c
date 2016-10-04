@@ -66,10 +66,17 @@ int main(int argc, char** argv) {
 	// INITIALIZATION
 	// ----------
 
+	char* buffer = malloc(128);
+
 	// Initialize SDL and create window
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
+		return EXIT_ERR;
+	}
+	
+	if (TTF_Init() < 0) {
+		printf("Couldn't initialize SDL TTF: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
@@ -90,34 +97,46 @@ int main(int argc, char** argv) {
 	
 	SDL_Surface* separatorSurface = IMG_Load("resources/separator.png");
 	if (!separatorSurface) {
-		printf("Couldn't create separator: %s\n", SDL_GetError());
+		printf("Couldn't load separator: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
 	SDL_Surface* leftPaddleSurface = IMG_Load("resources/left_pallete.png");
 	if (!leftPaddleSurface) {
-		printf("Couldn't create left paddle: %s\n", SDL_GetError());
+		printf("Couldn't load left paddle: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
 	SDL_Surface* rightPaddleSurface = IMG_Load("resources/right_pallete.png");
 	if (!rightPaddleSurface) {
-		printf("Couldn't create right paddle: %s\n", SDL_GetError());
+		printf("Couldn't load right paddle: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
 	SDL_Surface* ballSurface = IMG_Load("resources/ball.png");
 	if (!ballSurface) {
-		printf("Couldn't create separator: %s\n", SDL_GetError());
+		printf("Couldn't load separator: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
-	// Initalize scene variables
-	
-	// Positions are centered
+	// Initialize scene variables
 	
 	vector2i ballPosition = BALL_INITIAL_POSITION;
 	vector2i ballSpeed = BALL_INITIAL_SPEED;
+	
+	/*int keyDownPressed = 0;
+	int keyUpPressed = 0;
+	
+	int leftPaddlePosition = SCREEN_SIZE.y / 2;
+	int rightPaddlePosition = SCREEN_SIZE.y / 2;*/
+	
+	// Initialize font
+	
+	TTF_Font* fpsFont = TTF_OpenFont("resources/LCD_Solid.ttf", 9);
+	if (!fpsFont) {
+		printf("Couldn't load FPS font: %s\n", SDL_GetError());
+		return EXIT_ERR;
+	}
 	
 	// ----------
 	// MAIN LOOP
@@ -140,11 +159,23 @@ int main(int argc, char** argv) {
 			if (e.type == SDL_QUIT) {
 				running = 0;
 			}
+			/*else if (e.type == SDL_KEYDOWN) {
+				if (e.keysym.sym == SDLK_DOWN) keyDownPressed = 1;
+				else if (e.keysym.sym == SDLK_UP) keyUpPressed = 1;
+			}
+			else if (e.type == SDL_KEYUP) {
+				if (e.keysym.sym == SDLK_DOWN) keyDownPressed = 0;
+				else if (e.keysym.sym == SDLK_UP) keyUpPressed = 0;
+			}*/
 		}
 		
 		// ----------
 		// UPDATE FRAME
 		// ----------
+		
+		// Update left paddle position
+		
+		
 		
 		// Update ball position
 		
@@ -209,6 +240,13 @@ int main(int argc, char** argv) {
 		
 		dstRect = sdlRect(spriteRect(ballPosition, BALL_SIZE));
 		SDL_BlitSurface(ballSurface, NULL, screenSurface, &dstRect);
+
+		sprintf(buffer, "%.1f (%.1fms)", 1.0/frameDeltaTime, frameDeltaTime * 1000.0);
+		SDL_Surface* fpsSurface = TTF_RenderText_Solid(
+			fpsFont, buffer, (SDL_Color){255, 255, 255});
+		dstRect = (SDL_Rect){5, 5, 0, 0};
+		SDL_BlitSurface(fpsSurface, NULL, screenSurface, &dstRect);
+		SDL_FreeSurface(fpsSurface);
 	
 		// Swap back screen buffer to front (present frame)
 	
@@ -220,8 +258,10 @@ int main(int argc, char** argv) {
 		
 		time_t frameEndTime = clock();
 		frameDeltaTime = (frameEndTime - frameStartTime) / CLOCKS_PER_SEC;
-		if (frameDeltaTime < FRAME_MIN_DELTA)
+		if (frameDeltaTime < FRAME_MIN_DELTA) {
 			SDL_Delay((int) (FRAME_MIN_DELTA - frameDeltaTime) * 1000);
+			frameDeltaTime = FRAME_MIN_DELTA;
+		}
 	}
 	
 	// ----------
@@ -232,8 +272,11 @@ int main(int argc, char** argv) {
 	SDL_FreeSurface(leftPaddleSurface);
 	SDL_FreeSurface(rightPaddleSurface);
 	SDL_FreeSurface(ballSurface);
+	TTF_CloseFont(fpsFont);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+	
+	free(buffer);
 	
 	return EXIT_OK;
 }
