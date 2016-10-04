@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	const int EXIT_OK = 0;
 	const int EXIT_ERR = -1;
 
-	const double FRAME_MIN_DELTA = 1/60;
+	const double FRAME_MIN_DELTA = 1./60.;
 
 	const vector2i SCREEN_SIZE = (vector2i){640, 400};
 	
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 	// Initialize loop
 	
 	int running = 1;
-	double frameDeltaTime = 0;
+	double frameDeltaTime = 0.;
 	
 	while (running) {
 		time_t frameStartTime = clock();
@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
 		time_t frameEndTime = clock();
 		frameDeltaTime = (frameEndTime - frameStartTime) / CLOCKS_PER_SEC;
 		if (frameDeltaTime < FRAME_MIN_DELTA) {
-			SDL_Delay((int) (FRAME_MIN_DELTA - frameDeltaTime) * 1000);
+			SDL_Delay((int) ((FRAME_MIN_DELTA - frameDeltaTime) * 1000));
 			frameDeltaTime = FRAME_MIN_DELTA;
 		}
 	}
