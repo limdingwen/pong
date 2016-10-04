@@ -5,6 +5,27 @@
 #include <time.h>
 #include <stdio.h>
 
+#define EXIT_OK 0
+#define EXIT_ERR -1
+
+#define FRAME_MIN_DELTA (1./60.)
+
+#define SCREEN_SIZE (vector2i){640, 400}
+
+#define SEPARATOR_SIZE (vector2i){2, 400}
+#define PADDLE_SIZE (vector2i){8, 32}
+#define BALL_SIZE (vector2i){8, 8}
+
+#define PADDLE_PIXELS_FROM_BOUNDARY 20
+
+#define BALL_INITIAL_POSITION (vector2i){\
+	SCREEN_SIZE.x / 2,\
+	SCREEN_SIZE.y / 2}
+#define BALL_INITIAL_VELOCITY (vector2i){-5, 0}
+
+#define BALL_VERTICAL_SPEED 5
+#define PADDLE_SPEED 3
+
 // Vector data types
 
 typedef struct vector2i {
@@ -44,26 +65,6 @@ SDL_Rect sdlRect(recti rect) {
 // Main
 
 int main(int argc, char** argv) {
-	const int EXIT_OK = 0;
-	const int EXIT_ERR = -1;
-
-	const double FRAME_MIN_DELTA = 1./60.;
-
-	const vector2i SCREEN_SIZE = (vector2i){640, 400};
-	
-	const vector2i SEPARATOR_SIZE = (vector2i){2, 400};
-	const vector2i PADDLE_SIZE = (vector2i){8, 32};
-	const vector2i BALL_SIZE = (vector2i){8, 8};
-	
-	const int PADDLE_PIXELS_FROM_BOUNDARY = 20;
-	
-	const vector2i BALL_INITIAL_POSITION = (vector2i){
-		SCREEN_SIZE.x / 2,
-		SCREEN_SIZE.y / 2};
-	const vector2i BALL_INITIAL_VELOCITY = (vector2i){-5, 0}; // Pixels per frame
-	
-	const int BALL_VERTICAL_SPEED = 5;
-	const int PADDLE_SPEED = 3;
 
 	// ----------
 	// INITIALIZATION
