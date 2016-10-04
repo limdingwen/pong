@@ -126,8 +126,10 @@ int main(int argc, char** argv) {
 	// Initialize loop
 	
 	int running = 1;
+	double frameDeltaTime = 0;
 	
 	while (running) {
+		time_t frameStartTime = clock();
 		
 		// ----------
 		// HANDLE EVENTS
@@ -212,6 +214,14 @@ int main(int argc, char** argv) {
 	
 		SDL_UpdateWindowSurface(window);
 		
+		// ----------
+		// CAP FPS
+		// ----------
+		
+		time_t frameEndTime = clock();
+		frameDeltaTime = (frameEndTime - frameStartTime) / CLOCKS_PER_SEC;
+		if (frameDeltaTime < FRAME_MIN_DELTA)
+			SDL_Delay((int) (FRAME_MIN_DELTA - frameDeltaTime) * 1000);
 	}
 	
 	// ----------
