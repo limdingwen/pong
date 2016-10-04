@@ -60,8 +60,9 @@ int main(int argc, char** argv) {
 	const vector2i BALL_INITIAL_POSITION = (vector2i){
 		SCREEN_SIZE.x / 2,
 		SCREEN_SIZE.y / 2};
-	const vector2i BALL_INITIAL_SPEED = (vector2i){-10, 0}; // Pixels per frame
+	const vector2i BALL_INITIAL_VELOCITY = (vector2i){-10, 0}; // Pixels per frame
 	
+	const int BALL_VERTICAL_SPEED = 10;
 	const int PADDLE_SPEED = 5;
 
 	// ----------
@@ -124,7 +125,7 @@ int main(int argc, char** argv) {
 	// Initialize scene variables
 	
 	vector2i ballPosition = BALL_INITIAL_POSITION;
-	vector2i ballSpeed = BALL_INITIAL_SPEED;
+	vector2i ballVelocity = BALL_INITIAL_VELOCITY;
 	
 	int keyDownPressed = 0;
 	int keyUpPressed = 0;
@@ -185,21 +186,22 @@ int main(int argc, char** argv) {
 		
 		// Update ball position
 		
-		ballPosition.x += ballSpeed.x;
-		ballPosition.y += ballSpeed.y;
+		ballPosition.x += ballVelocity.x;
+		ballPosition.y += ballVelocity.y;
 		
 		// Check if ball is out of bounds horizontally
 		// If so, reset position, speed and add score
 		
 		if (ballPosition.x < 0 || ballPosition.x > SCREEN_SIZE.x) {
 			ballPosition = BALL_INITIAL_POSITION;
+			ballVelocity = BALL_INITIAL_VELOCITY;
 		}
 		
 		// Check if ball is out of bounds vertically
 		// If so, bounce ball vertically
 		
 		if (ballPosition.y < 0 || ballPosition.y > SCREEN_SIZE.y) {
-			ballSpeed.y = -ballSpeed.y;
+			ballVelocity.y = -ballVelocity.y;
 		}
 		
 		// Check if ball is hitting a paddle
@@ -207,14 +209,22 @@ int main(int argc, char** argv) {
 		
 		if (inRect(ballPosition, spriteRect((vector2i){
 			PADDLE_PIXELS_FROM_BOUNDARY, 
-			leftPaddlePosition}, PADDLE_SIZE)) && ballSpeed.x < 0) {
-			ballSpeed.x = -ballSpeed.x;
+			leftPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x < 0) {
+			ballVelocity.x = -ballVelocity.x;
+			ballVelocity.y = 
+				(int) ((double) (ballPosition.y - leftPaddlePosition) / 
+				(PADDLE_SIZE.y / 2) *
+				BALL_VERTICAL_SPEED);
 		}
 		
 		if (inRect(ballPosition, spriteRect((vector2i){
 			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
-			rightPaddlePosition}, PADDLE_SIZE)) && ballSpeed.x > 0) {
-			ballSpeed.x = -ballSpeed.x;
+			rightPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x > 0) {
+			ballVelocity.x = -ballVelocity.x;
+			ballVelocity.y = 
+				(int) ((double) (ballPosition.y - rightPaddlePosition) / 
+				(PADDLE_SIZE.y / 2) *
+				BALL_VERTICAL_SPEED);
 		}
 
 		// ----------
