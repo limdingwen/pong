@@ -19,7 +19,11 @@
 #define PADDLE_SIZE (vector2i){8, 32}
 #define BALL_SIZE (vector2i){8, 8}
 
-#define PADDLE_PIXELS_FROM_BOUNDARY 20
+#define PADDLE_BOUNDARY_DIST 20
+
+#define SCORE_CENTER_DIST 20
+#define SCORE_TOP_DIST 20
+#define SCORE_FONT_SIZE (vector2i){16, 24}
 
 #define BALL_INITIAL_POSITION (vector2i){\
 	SCREEN_SIZE.x / 2,\
@@ -28,6 +32,8 @@
 
 #define BALL_VERTICAL_SPEED 2
 #define PADDLE_SPEED 3
+
+#define PADDLE_AI_DEADZONE (PADDLE_SIZE.y / 3)
 
 // Vector data types
 
@@ -155,6 +161,9 @@ int main(int argc, char** argv) {
 	int leftPaddlePosition = SCREEN_SIZE.y / 2;
 	int rightPaddlePosition = SCREEN_SIZE.y / 2;
 	
+	int leftScore = 0;
+	int rightScore = 0;
+	
 	// Initialize font
 	
 	TTF_Font* fpsFont = TTF_OpenFont("resources/LCD_Solid.ttf", 9);
@@ -246,6 +255,13 @@ int main(int argc, char** argv) {
 			// If so, reset ball
 		
 			if (ballPosition.x < 0 || ballPosition.x > SCREEN_SIZE.x) {
+				if (ballPosition.x < 0) {
+					rightScore++;
+				}
+				else {
+					leftScore++;
+				}
+			
 				ballPosition = BALL_INITIAL_POSITION;
 				ballVelocity = BALL_INITIAL_VELOCITY;
 				ballPaused = 1;
@@ -262,14 +278,14 @@ int main(int argc, char** argv) {
 			// If so, set ball's horizontal direction
 		
 			if (inRect(ballPosition, spriteRect((vector2i){
-				PADDLE_PIXELS_FROM_BOUNDARY, 
+				PADDLE_BOUNDARY_DIST, 
 				leftPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x < 0) {
 				ballVelocity.x = -ballVelocity.x;
 				ballVelocity.y = verticalBallVelocity(ballPosition.y, leftPaddlePosition);
 			}
 		
 			if (inRect(ballPosition, spriteRect((vector2i){
-				SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
+				SCREEN_SIZE.x - PADDLE_BOUNDARY_DIST, 
 				rightPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x > 0) {
 				ballVelocity.x = -ballVelocity.x;
 				ballVelocity.y = verticalBallVelocity(ballPosition.y, rightPaddlePosition);
@@ -294,12 +310,12 @@ int main(int argc, char** argv) {
 		SDL_BlitSurface(separatorSurface, NULL, screenSurface, &dstRect);
 		
 		dstRect = sdlRect(spriteRect((vector2i){
-			PADDLE_PIXELS_FROM_BOUNDARY, 
+			PADDLE_BOUNDARY_DIST, 
 			leftPaddlePosition}, PADDLE_SIZE));
 		SDL_BlitSurface(leftPaddleSurface, NULL, screenSurface, &dstRect);
 		
 		dstRect = sdlRect(spriteRect((vector2i){
-			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
+			SCREEN_SIZE.x - PADDLE_BOUNDARY_DIST, 
 			rightPaddlePosition}, PADDLE_SIZE));
 		SDL_BlitSurface(rightPaddleSurface, NULL, screenSurface, &dstRect);
 		
@@ -312,6 +328,24 @@ int main(int argc, char** argv) {
 		dstRect = (SDL_Rect){5, 5, 0, 0};
 		SDL_BlitSurface(fpsSurface, NULL, screenSurface, &dstRect);
 		SDL_FreeSurface(fpsSurface);
+		
+		sprintf(buffer, "%i", leftScore);
+		SDL_Surface* leftScoreSurface = TTF_RenderText_Solid(
+			scoreFont, buffer, (SDL_Color){255, 255, 255});
+		dstRect = sdlRect(spriteRect(
+			(vector2i){SCREEN_SIZE.x / 2 - SCORE_CENTER_DIST, SCORE_TOP_DIST},
+			SCORE_FONT_SIZE));
+		SDL_BlitSurface(leftScoreSurface, NULL, screenSurface, &dstRect);
+		SDL_FreeSurface(leftScoreSurface);
+		
+		sprintf(buffer, "%i", rightScore);
+		SDL_Surface* rightScoreSurface = TTF_RenderText_Solid(
+			scoreFont, buffer, (SDL_Color){255, 255, 255});
+		dstRect = sdlRect(spriteRect(
+			(vector2i){SCREEN_SIZE.x / 2 + SCORE_CENTER_DIST, SCORE_TOP_DIST},
+			SCORE_FONT_SIZE));
+		SDL_BlitSurface(rightScoreSurface, NULL, screenSurface, &dstRect);
+		SDL_FreeSurface(rightScoreSurface);
 	
 		// Swap back screen buffer to front (present frame)
 	
