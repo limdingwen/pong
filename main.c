@@ -4,6 +4,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <math.h>
 
 // Constants
 
@@ -25,7 +26,7 @@
 	SCREEN_SIZE.y / 2}
 #define BALL_INITIAL_VELOCITY (vector2i){-8, 0}
 
-#define BALL_VERTICAL_SPEED 5
+#define BALL_VERTICAL_SPEED 2
 #define PADDLE_SPEED 3
 
 // Vector data types
@@ -62,6 +63,23 @@ recti spriteRect(vector2i position, vector2i size) {
 
 SDL_Rect sdlRect(recti rect) {
 	return (SDL_Rect){rect.x, rect.y, rect.width, rect.height};
+}
+
+double absd(double x) {
+	return (x >= 0) ? x : -x;
+}
+
+int verticalBallVelocity(int ballPositionY, int paddlePosition) {
+	int verticalSpeed = (int) (
+		log(
+			absd(
+				(ballPositionY - paddlePosition) / 
+				(PADDLE_SIZE.y / 2.)
+			) + 1.
+		) * 3.33 * BALL_VERTICAL_SPEED
+	);
+	
+	return ((ballPositionY - paddlePosition) >= 0) ? verticalSpeed : -verticalSpeed;
 }
 
 // Main
@@ -129,6 +147,7 @@ int main(int argc, char** argv) {
 	
 	vector2i ballPosition = BALL_INITIAL_POSITION;
 	vector2i ballVelocity = BALL_INITIAL_VELOCITY;
+	int ballPaused = 1;
 	
 	int keyDownPressed = 0;
 	int keyUpPressed = 0;
@@ -141,6 +160,12 @@ int main(int argc, char** argv) {
 	TTF_Font* fpsFont = TTF_OpenFont("resources/LCD_Solid.ttf", 9);
 	if (!fpsFont) {
 		printf("Couldn't load FPS font: %s\n", SDL_GetError());
+		return EXIT_ERR;
+	}
+	
+	TTF_Font* scoreFont = TTF_OpenFont("resources/LCD_Solid.ttf", 24);
+	if (!scoreFont) {
+		printf("Couldn't load score font: %s\n", SDL_GetError());
 		return EXIT_ERR;
 	}
 	
@@ -166,12 +191,28 @@ int main(int argc, char** argv) {
 				running = 0;
 			}
 			else if (e.type == SDL_KEYDOWN) {
-				if (e.key.keysym.sym == SDLK_DOWN) keyDownPressed = 1;
-				else if (e.key.keysym.sym == SDLK_UP) keyUpPressed = 1;
+				switch (e.key.keysym.sym) {
+					case SDLK_DOWN:
+						keyDownPressed = 1;
+						break;
+					case SDLK_UP:
+						keyUpPressed = 1;
+						break;
+					case SDLK_SPACE:
+						if (ballPaused)
+							ballPaused = 0;
+						break;
+				}
 			}
 			else if (e.type == SDL_KEYUP) {
-				if (e.key.keysym.sym == SDLK_DOWN) keyDownPressed = 0;
-				else if (e.key.keysym.sym == SDLK_UP) keyUpPressed = 0;
+				switch (e.key.keysym.sym) {
+					case SDLK_DOWN:
+						keyDownPressed = 0;
+						break;
+					case SDLK_UP:
+						keyUpPressed = 0;
+						break;
+				}
 			}
 		}
 		
@@ -195,47 +236,44 @@ int main(int argc, char** argv) {
 		if (rightPaddlePosition < 0) rightPaddlePosition = 0;
 		else if (rightPaddlePosition > SCREEN_SIZE.y) rightPaddlePosition = SCREEN_SIZE.y;
 		
-		// Update ball position
+		if (!ballPaused) {
+			// Update ball position
 		
-		ballPosition.x += ballVelocity.x;
-		ballPosition.y += ballVelocity.y;
+			ballPosition.x += ballVelocity.x;
+			ballPosition.y += ballVelocity.y;
 		
-		// Check if ball is out of bounds horizontally
-		// If so, reset position, speed and add score
+			// Check if ball is out of bounds horizontally
+			// If so, reset ball
 		
-		if (ballPosition.x < 0 || ballPosition.x > SCREEN_SIZE.x) {
-			ballPosition = BALL_INITIAL_POSITION;
-			ballVelocity = BALL_INITIAL_VELOCITY;
-		}
+			if (ballPosition.x < 0 || ballPosition.x > SCREEN_SIZE.x) {
+				ballPosition = BALL_INITIAL_POSITION;
+				ballVelocity = BALL_INITIAL_VELOCITY;
+				ballPaused = 1;
+			}
 		
-		// Check if ball is out of bounds vertically
-		// If so, bounce ball vertically
+			// Check if ball is out of bounds vertically
+			// If so, bounce ball vertically
 		
-		if (ballPosition.y < 0 || ballPosition.y > SCREEN_SIZE.y) {
-			ballVelocity.y = -ballVelocity.y;
-		}
+			if (ballPosition.y < 0 || ballPosition.y > SCREEN_SIZE.y) {
+				ballVelocity.y = -ballVelocity.y;
+			}
 		
-		// Check if ball is hitting a paddle
-		// If so, set ball's horizontal direction
+			// Check if ball is hitting a paddle
+			// If so, set ball's horizontal direction
 		
-		if (inRect(ballPosition, spriteRect((vector2i){
-			PADDLE_PIXELS_FROM_BOUNDARY, 
-			leftPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x < 0) {
-			ballVelocity.x = -ballVelocity.x;
-			ballVelocity.y = 
-				(int) ((double) (ballPosition.y - leftPaddlePosition) / 
-				(PADDLE_SIZE.y / 2) *
-				BALL_VERTICAL_SPEED);
-		}
+			if (inRect(ballPosition, spriteRect((vector2i){
+				PADDLE_PIXELS_FROM_BOUNDARY, 
+				leftPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x < 0) {
+				ballVelocity.x = -ballVelocity.x;
+				ballVelocity.y = verticalBallVelocity(ballPosition.y, leftPaddlePosition);
+			}
 		
-		if (inRect(ballPosition, spriteRect((vector2i){
-			SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
-			rightPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x > 0) {
-			ballVelocity.x = -ballVelocity.x;
-			ballVelocity.y = 
-				(int) ((double) (ballPosition.y - rightPaddlePosition) / 
-				(PADDLE_SIZE.y / 2) *
-				BALL_VERTICAL_SPEED);
+			if (inRect(ballPosition, spriteRect((vector2i){
+				SCREEN_SIZE.x - PADDLE_PIXELS_FROM_BOUNDARY, 
+				rightPaddlePosition}, PADDLE_SIZE)) && ballVelocity.x > 0) {
+				ballVelocity.x = -ballVelocity.x;
+				ballVelocity.y = verticalBallVelocity(ballPosition.y, rightPaddlePosition);
+			}
 		}
 
 		// ----------
@@ -300,6 +338,7 @@ int main(int argc, char** argv) {
 	SDL_FreeSurface(rightPaddleSurface);
 	SDL_FreeSurface(ballSurface);
 	TTF_CloseFont(fpsFont);
+	TTF_CloseFont(scoreFont);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 	
