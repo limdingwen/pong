@@ -239,8 +239,8 @@ int main(int argc, char** argv) {
 		
 		// Update right paddle position
 		
-		if (ballPosition.y > rightPaddlePosition) rightPaddlePosition += PADDLE_SPEED;
-		else if (ballPosition.y < rightPaddlePosition) rightPaddlePosition -= PADDLE_SPEED;
+		if (ballPosition.y > rightPaddlePosition + PADDLE_AI_DEADZONE) rightPaddlePosition += PADDLE_SPEED;
+		else if (ballPosition.y < rightPaddlePosition - PADDLE_AI_DEADZONE) rightPaddlePosition -= PADDLE_SPEED;
 		
 		if (rightPaddlePosition < 0) rightPaddlePosition = 0;
 		else if (rightPaddlePosition > SCREEN_SIZE.y) rightPaddlePosition = SCREEN_SIZE.y;
