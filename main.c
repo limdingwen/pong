@@ -23,7 +23,7 @@
 
 #define SCORE_CENTER_DIST 20
 #define SCORE_TOP_DIST 20
-#define SCORE_FONT_SIZE (vector2i){16, 24}
+#define SCORE_FONT_SIZE (vector2i){15, 24}
 
 #define BALL_INITIAL_POSITION (vector2i){\
 	SCREEN_SIZE.x / 2,\
